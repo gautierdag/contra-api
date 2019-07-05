@@ -60,11 +60,21 @@ def process_dataset(pd_df):
     with new columns for features and processed pair
     """
     pd_df["entailment"] = pd_df["entailment"].astype("category")
+
     proc_pairs = [
         preprocess_pair(t, h) for t, h in zip(list(pd_df["t"]), list(pd_df["h"]))
     ]
     features_pd = pd.DataFrame(proc_pairs, columns=feat_cols)
-    pd_df = pd.concat([pd_df, features_pd], axis=1, sort=False)
+
+    proc_pairs_reversed = [
+        preprocess_pair(h, t) for t, h in zip(list(pd_df["t"]), list(pd_df["h"]))
+    ]
+    features_pd_reversed = pd.DataFrame(proc_pairs_reversed, columns=feat_cols)
+
+    pd_df1 = pd.concat([pd_df, features_pd], axis=1, sort=False)
+    pd_df2 = pd.concat([pd_df, features_pd_reversed], axis=1, sort=False)
+
+    pd_df = pd.concat([pd_df1, pd_df2], axis=0, sort=False)
     return pd_df
 
 

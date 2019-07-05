@@ -1,0 +1,8 @@
+pandas==0.24.2
+numpy==1.16.4
+Flask_RESTful==0.3.7
+Flask==1.0.3
+scikit_learn==0.21.2
+matplotlib==3.1.0
+seaborn==0.9.0
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.1.0/en_core_web_sm-2.1.0.tar.gz

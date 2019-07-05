@@ -3,44 +3,40 @@ from flask_restful import reqparse, abort, Api, Resource
 import pickle
 import numpy as np
 
+from build_model import get_model
 from preprocess import preprocess_pair
 
 app = Flask(__name__)
 api = Api(app)
 
-# load model
-clf_path = "models/svm_classifier.pkl"
-with open(clf_path, "rb") as f:
-    model = pickle.load(f)
+# Get model
+clf = get_model()
+
+# Confidence dictionary to map label to probability
+confidence_dict = {clf.classes_[i]: i for i in range(len(clf.classes_))}
 
 # argument parsing
 parser = reqparse.RequestParser()
-parser.add_argument("text")
+parser.add_argument("txt")
 parser.add_argument("hyp")
 
 
 class PredictContradiction(Resource):
     def get(self):
-        # use parser and find the user's query
+        # use parser and find the queried "text" and "hyp"
         args = parser.parse_args()
-        user_query = args["query"]
+        t = args["txt"]
+        h = args["hyp"]
 
         # vectorize the user's query and make a prediction
-        X = preprocess_pair(t, h)
-        prediction = model.predict(uq_vectorized)
-        pred_proba = model.predict_proba(uq_vectorized)
-
-        # Output either 'Negative' or 'Positive' along with the score
-        if prediction == 0:
-            pred_text = "Negative"
-        else:
-            pred_text = "Positive"
+        X = np.array(preprocess_pair(t, h)).reshape(1, -1)
+        prediction = clf.predict(X)
+        pred_proba = clf.predict_proba(X)
 
         # round the predict proba value and set to new variable
-        confidence = round(pred_proba[0], 3)
-
+        confidence = round(pred_proba[0][confidence_dict[prediction[0]]], 3)
         # create JSON object
-        output = {"prediction": pred_text, "confidence": confidence}
+        output = {"prediction": prediction[0], "confidence": confidence}
 
         return output
 
@@ -51,4 +47,4 @@ api.add_resource(PredictContradiction, "/")
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
